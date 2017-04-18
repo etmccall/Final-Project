@@ -219,8 +219,8 @@ popular_movie= cur.fetchall()
 popular_movies=[x[0] for x in popular_movie]
 
 cur.execute('SELECT movie_title FROM Movies');
-resul = cur.fetchall()
-title_list=[x[0] for x in resul]
+resl = cur.fetchall()
+title_list=[x[0] for x in resl]
 
 strtitle_list=""
 for x in popular_movies: 
