@@ -69,7 +69,7 @@ def request_movie(x):
 		params_diction["t"] = x
 		movie_results=requests.get(base_url,params=params_diction).text 
 		CACHE_DICTION[x]=movie_results
-		cache_file = open(CACHE_FNAME, 'w') 
+		cache_file = open(CACHE_FNAME,'w') 
 		cache_file.write(json.dumps(CACHE_DICTION))
 		cache_file.close()
 	return json.loads(movie_results)
