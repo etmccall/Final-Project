@@ -15,7 +15,7 @@ import os
  
 
 
-consumer_key = "mjRy0eJMqyuTAHcHgMSf6nBnw" 
+consumer_key = "mjRy0eJMqyuTAHcHgMSf6nBnw"
 consumer_secret = "VYEMPBqHjHI3fZbXpL6NliKd02JyxMkeONGBAElgaOlhX5RiJK"
 access_token = "1403022116-6TNaHF2n9GxD1Ga35XMq9HYbAR4BWWPJP8bUMnE"
 access_token_secret = "YhcITP1nGO7deWexc7HkrCZhmiJ2t5Laaq8wE6oEgMx2H"
