@@ -1,22 +1,4 @@
-###### INSTRUCTIONS ###### 
 
-# An outline for preparing your final project assignment is in this file.
-
-# Below, throughout this file, you should put comments that explain exactly what you should do for each step of your project. You should specify variable names and processes to use. For example, "Use dictionary accumulation with the list you just created to create a dictionary called tag_counts, where the keys represent tags on flickr photos and the values represent frequency of times those tags occur in the list."
-
-# You can use second person ("You should...") or first person ("I will...") or whatever is comfortable for you, as long as you are clear about what should be done.
-
-# Some parts of the code should already be filled in when you turn this in:
-# - At least 1 function which gets and caches data from 1 of your data sources, and an invocation of each of those functions to show that they work 
-# - Tests at the end of your file that accord with those instructions (will test that you completed those instructions correctly!)
-# - Code that creates a database file and tables as your project plan explains, such that your program can be run over and over again without error and without duplicate rows in your tables.
-# - At least enough code to load data into 1 of your dtabase tables (this should accord with your instructions/tests)
-
-######### END INSTRUCTIONS #########
-
-# Put all import statements you need here.
-
-# Begin filling in instructions....
 import unittest
 import itertools
 import collections
@@ -30,8 +12,7 @@ import omdb
 import re
 import os
 
-
-##The first code in the data file is code to access the twitter api. 
+ 
 
 
 consumer_key = "mjRy0eJMqyuTAHcHgMSf6nBnw" 
@@ -48,7 +29,7 @@ public_tweets = api.home_timeline()
 api = tweepy.API(auth, parser=tweepy.parsers.JSONParser())
 
 CACHE_FNAME = "SI206_final_project_cache.json"
-##Below sets up the caching pattern 
+
 try:
 	cache_file = open(CACHE_FNAME,'r')
 	cache_contents = cache_file.read()
@@ -57,8 +38,6 @@ try:
 except:
 	CACHE_DICTION = {} 
 
-##The function get request_movie takes an argument of a movie. It checks to see if the movie is a key in the dictionary. If it isn't, it searches the 
-##omdb api for it and stores the resulting dictonary as a value paired with the movie title as a key. 
 
 def request_movie(x):
 	if x in CACHE_DICTION: 
@@ -74,14 +53,14 @@ def request_movie(x):
 		cache_file.close()
 	return json.loads(movie_results)
 
-##Movie_list is a list of the information from the omdb api of three movies. 
+
 
 zoo=request_movie("Zootopia")
 dead=request_movie("Deadpool")
 dark_knight=request_movie("The Dark Knight") 
 movie_list=[zoo,dead,dark_knight]
 
-##The movie class creates instance variables and methods for each movie based off the information in the omdb api. 
+
 
 class Movie(object):
 	def __init__(self, d):
@@ -106,14 +85,11 @@ class Movie(object):
 		else: 
 			return "Not Comedy"
 	def __str__(self):
-		return "{} is a movie featuring {} and it omdb rating is {}.".format(self.title,self.actors, self.rating)
-
-##The list three_movie_class creates a list of three movie objects. 
+		return "{} is a movie featuring {} and it imdb rating is {}.".format(self.title,self.actors, self.rating)
+ 
 three_movie_class=[Movie(i) for i in movie_list]
 
-## The function get_twitter_movie_infor takes a movie as an argument, gives it a special format that it checks to see if it is in the CACHE_Diction. If
-## it isn't, it searches the twitter api for 5 tweets using the movie as search term. It stores the resulting list as a value paired with the movie title 
-##in a special format as a key.
+
 def get_twitter_movie_infor(z): 
 	unique_identifier = "twitter_{}".format(z)
 	if unique_identifier in CACHE_DICTION:
@@ -128,7 +104,6 @@ def get_twitter_movie_infor(z):
 		cache_file.close()
 	return python_obj_data
 
-##The function get_users takes a tweet as an argument and returns a list of all users involved in the tweet. 
 def get_users(l): 
 	y=[]
 	y.append(l['user']['screen_name'])
@@ -138,8 +113,6 @@ def get_users(l):
 			y.append(x['screen_name'])
 	return y
 
-## The following code creates the Movies table, using the three_movie_class list. Its columns are the title, the actors, the director, the rating, 
-## and the quality for each movie through using the instance variables and methods from the class movie. 
 conn = sqlite3.connect('final_project.db')
 cur = conn.cursor()
 cur.execute('DROP TABLE IF EXISTS Movies')
@@ -159,10 +132,6 @@ for mm in three_movie_class:
 	cur.execute(statement, tupz)
 conn.commit()
 
-## The following code creates the Users table. It searches for tweets for movies in the three_movie_class list through accessing  the title and using
-## the get_movie_infor function. It then uses get_users function to get each user. It appends the first user to a list to access in the tweets table
-## because this is the author of the tweet. It the uses the twitter api to get information on the twitter user that it stores in columns. The columns of 
-## this table are the user's id, screen name, number of times they favorites a tweet, and their twitter description. 
 
 table_spec = 'CREATE TABLE IF NOT EXISTS '
 table_spec += 'Users (user_id TEXT, '
@@ -184,10 +153,6 @@ for i in three_movie_class:
 			cur.execute(statement, tupz)
 conn.commit()
 
-## The following code creates the Tweets table. It searches for tweets for movies in the three_movie_class list through accessing an the title and using
-## the get_movie_infor function and stores all the tweets in a list. It then creates a table that contain information on the tweet such as the tweet id
-## the user who posted it, the tweet text, the number of times the tweet has been retweeed, the number of times the tweet has been favorited by using
-## the keys in each tweet's dictory and using the list of users who posted the tweet. 
 table_spec = 'CREATE TABLE IF NOT EXISTS '
 table_spec += 'Tweets (tweet_id INTEGER PRIMARY KEY, '
 table_spec += 'user_posted TEXT, text TEXT, retweets INTEGER, favorites INTEGER)'
@@ -213,7 +178,7 @@ for x in quality_movie:
 
 ##The following code selects texts from popular tweets. It then uses regular expressions to find the movies mentioned in the tweet and creates a 
 ##dictionary with the movie as a key, and the values as list of tweets about them. 
-quer="Select text FROM Tweets WHERE retweets + favorites >= 20"
+quer="Select text FROM Tweets WHERE retweets > 20"
 cur.execute(quer)
 popular_movie= cur.fetchall()
 popular_movies=[x[0] for x in popular_movie]
@@ -238,7 +203,6 @@ for moviee in title_list:
 	if c != []:
 		movie_diction[moviee] = c
 
-##The following code selects movie titles and ratings from the list of movies, and organzies these tuples in a list sorted by the highest rating. 
 cur.execute('SELECT movie_title, rating FROM Movies');
 ratings_dic={}
 res = cur.fetchall()
@@ -247,9 +211,6 @@ for x in res:
 items = ratings_dic.items();
 sorted_items = sorted(items, key = lambda x: x[1], reverse=True) 
 
-## The following inner join gets information from the users and tweets table, joined by user name in the cases where the user favorited over 10,000 
-## tweets. It then uses regular expressions to find the movie mentioned in the text. It then creates a list of tuples that contain the movie, the user
-## the times the user has favorited a tweet, and the number of tweets the user's retweet received. 
 m2q="SELECT Tweets.text, Users.screen_name, Users.num_favs, Tweets.retweets FROM Users INNER JOIN Tweets on Tweets.user_posted=Users.screen_name WHERE Users.num_favs > 10000";
 cur.execute(m2q)
 ress= cur.fetchall()
@@ -272,13 +233,12 @@ for xw in ress:
 			tweets_movie_dictionn.append(list_of_inf)  
 		if re.search(xmy, z): 
 			tweets_movie_dictionn.append(list_of_inf)
-
-## The following writes the information gathered from the queries to a txt file. 
+ 
 f = open("206_Final_Project.txt",'w')
 f.close()
 if os.stat("206_Final_Project.txt").st_size == 0: 
 	m = open("206_Final_Project.txt", 'w') 
-	m.write("This file contains information on the Deadpool, Zootopia, and The Dark Knight that lists their quality, their imdb ratings, popular tweets about them, and lists of users who have favorites a lot of tweets and tweeted about them")
+	m.write("This file contains information on the Deadpool, Zootopia, and The Dark Knight. It lists their quality, their imdb ratings, popular tweets about them, and active users involved in a tweet about one of the movies.")
 	m.write("\n")
 	m.write("These movies received an excellent rating from Imdb")
 	m.write("\n")
@@ -294,14 +254,17 @@ if os.stat("206_Final_Project.txt").st_size == 0:
 		m.write("\n")
 	m.write("Below is a list of popular tweets about one of the movies")
 	m.write("\n")
+	x=0
 	for wmm in movie_diction.keys():
 		m.write(wmm) 
 		m.write(": ") 
 		for wrt in movie_diction[wmm]:
+			if x != 0:
+				m.write(", ")
 			m.write(wrt)
-			m.write(", ")
+			x = x +1
 		m.write("\n")
-	m.write("Below are lists about users who tweeted about a movie and have favorited a lot of tweets previously")
+	m.write("Below is a list of active users who tweeted about one of the movies. An active user favorited over 10,000 tweets. Each item is organized by movie, screen name, number of user's favorites, and number of retweets the tweet received.")
 	m.write("\n")
 	for zz in tweets_movie_dictionn: 
 		m.write(zz[0]) 
@@ -314,22 +277,22 @@ if os.stat("206_Final_Project.txt").st_size == 0:
 		m.write("\n")
 	m.close()	
 
-# Put your tests here, with any edits you now need from when you turned them in with your project plan.
+
 class Test1(unittest.TestCase):
 	def test_request_movie(self): 
 		d={}
 		m=request_movie("Zootopia")
-		self.assertEqual(type(m),type(d))
+		self.assertEqual(type(m),type(d), "Testing that request_movie fucnction returns a dictionary")
 	def test_request_movie2(self):
 		d={}
 		m=request_movie("Zootopia")
-		self.assertEqual(type(list(m.keys())[0]),type(""))
+		self.assertEqual(type(list(m.keys())[0]),type(""), "Testing that the keys in the dictionary are strings")
 class Test2(unittest.TestCase):
 	def test_characterize_rating(self):
-		self.assertEqual(type(three_movie_class[0].characterize_rating()),type("Poor"))
-	def test_characterize_rating(self): 
+		self.assertEqual(type(three_movie_class[0].characterize_rating()),type("Poor"), "Testing that characterize rating method in movie class returns a string")
+	def test_characterize_rating2(self): 
 		three_movie_class[0].rating=3.0
-		self.assertEqual(three_movie_class[0].characterize_rating(),"Poor")
+		self.assertEqual(three_movie_class[0].characterize_rating(),"Poor", "Testing that characterize rating method returns correct word based of value")
 class Test3(unittest.TestCase):
 	def test_omdb_rating(self): 
 		self.assertEqual(type(three_movie_class[0].rating),type(8.1),"Testing that rating is an integer")
@@ -339,38 +302,38 @@ class Test6(unittest.TestCase):
 		d={}
 		f={}
 		m=[d,f]
-		self.assertEqual(type(d),type(r))
+		self.assertEqual(type(d),type(r), "Testing that test_movie_infor returns a list whose elements are dictionaries")
 	def test_user_info1(self):
 		r = get_twitter_movie_infor("Zootopia")
 		d={}
 		f={}
 		m=[d,f]
-		self.assertEqual(type(m),type(r))
+		self.assertEqual(type(m),type(r),"Testing that test_movie_infor returns a list")
 class Test7(unittest.TestCase):
 	def test_is_comedy(self):
 		l = request_movie("Zootopia")
-		self.assertEqual(type(Movie(l).is_comedy()),type("what"))
+		self.assertEqual(type(Movie(l).is_comedy()),type("what"), "Testing is_comedy() method of movie class returns a string")
 	def test_is_comedy2(self):
 		l = request_movie("Zootopia")
 		rry = Movie(l)
 		rry.genre = ["Animation", "Comedy", "Action"]
-		self.assertEqual(Movie(l).is_comedy(),"Comedy")
+		self.assertEqual(Movie(l).is_comedy(),"Comedy", "Testing that is_comedy() returns a comedy appropiately")
 class Test8(unittest.TestCase):
 	def test_three_movie_class1(self): 
 		d={}
 		f={}
 		m=[d,f]
-		self.assertEqual(type(m),type(movie_list))
+		self.assertEqual(type(m),type(movie_list), "Testing that movie list is a list")
 	def test_three_movie_class2(self): 
 		d={}
 		f={}
 		l = request_movie("Zootopia")
-		self.assertEqual(type(Movie(l)),type(three_movie_class[0]))
+		self.assertEqual(type(Movie(l)),type(three_movie_class[0]), "Testing that first element of three_movie_class is a Movie class type")
 class Test9(unittest.TestCase):
 	def test_caching(self):
 		fstr = open("SI206_final_project_cache.json","r").read()
-		self.assertTrue("Zootopia" in fstr)
-class Task2(unittest.TestCase):
+		self.assertTrue("Zootopia" in fstr, "Testing that the caching works properly")
+class Test10(unittest.TestCase):
 	def test_tweets_1(self):
 		conn = sqlite3.connect('final_project.db')
 		cur = conn.cursor()
@@ -388,18 +351,16 @@ class Task2(unittest.TestCase):
 	def test_tweets_3(self):
 		conn = sqlite3.connect('final_project.db')
 		cur = conn.cursor()
-		cur.execute('SELECT user_id FROM Tweets');
+		cur.execute('SELECT user_posted FROM Tweets');
 		result = cur.fetchall()
-		self.assertTrue(len(result[1][0])>=2,"Testing that a tweet user_id value fulfills a requirement of being a Twitter user id rather than an integer, etc")
+		self.assertTrue(len(result[1][0])>=2,"Testing that a tweet user_id is a valid Twitter user_id")
 		conn.close()
 	def test_tweets_4(self):
 		conn = sqlite3.connect('final_project.db')
 		cur = conn.cursor()
 		cur.execute('SELECT tweet_id FROM Tweets');
 		result = cur.fetchall()
-		self.assertTrue(result[0][0] != result[15][0], "Testing part of what's expected such that tweets are not being added over and over (tweet id is a primary key properly)...")
-		if len(result) > 20:
-			self.assertTrue(result[0][0] != result[20][0])
+		self.assertTrue(result[0][0] != result[15][0], "Testing that the table consists of unique tweets")
 		conn.close()
 	def test_users_4(self):
 		conn = sqlite3.connect('final_project.db')
@@ -428,11 +389,44 @@ class Task2(unittest.TestCase):
 		result = cur.fetchall()
 		self.assertTrue(len(result)==3,"Testing that there are 3 Movies in the Movie table")
 		conn.close()
+class Test10(unittest.TestCase):
+	def test_movie_diction(self): 
+		self.assertEqual(type(movie_diction), type({}), "Testing that movie_diction is a dictionary")
+	def test_movie_diction1(self):
+		x = 0 
+		for rwy in movie_diction.values(): 
+			x = x + 1
+		self.assertEqual(type(rwy), type([]), "Testing that movie_diction values are lists")
+	def test_res(self): 
+		self.assertEqual(type(res[0]), type(()), "Testing cur fetchall properly returned a tuple") 
+	def test_sorted(self): 
+		self.assertGreater(sorted_items[0][1], sorted_items[1][1], "Testing movies are listed in increasing order")
+	def test_join_query(self): 
+	 	self.assertEqual(len(ress[0]),4, "Testing that the length of each tuple in fetch all is 4")
+	def test_join_query2(self): 
+	 	self.assertGreater(ress[0][2],10000, "Testing that user's number of favorites in joined query is greater than 10000") 
+	def test_join_query3(self):
+	 	self.assertEqual(type(tweets_movie_dictionn[0]), type(()), "Testing that tweet_diction is a list of tuples")
+	def test_join_query4(self):
+	 	self.assertEqual(len(tweets_movie_dictionn[0]), 4, "Testing that length of each tuple in tweet_diction is 4")
 
 class Test_Movie_qual(unittest.TestCase):
 	def test_quality_movies(self):
 		self.assertEqual(type(quality_movies),type(["hi","Bye"]),"Testing that quality_movies is a list")
 
+class Test_Txt_file(unittest.TestCase):
+	def test_txt(self): 
+		fstr = open("206_Final_Project.txt","r").read()
+		self.assertTrue("Zootopia" in fstr, "Testing that Zootopia was written to file ")
+	def test_txt1(self): 
+		fstr = open("206_Final_Project.txt","r").read()
+		self.assertTrue("," in fstr, "Testing that the file contains commas")
+	def test_txt2(self): 
+		fstr = open("206_Final_Project.txt","r").read()
+		self.assertTrue(":" in fstr, "Testing that the file contains : ")
+	def test_txt3(self): 
+		fstr = open("206_Final_Project.txt","r").read()
+		self.assertTrue("Below" in fstr, "Testing that the file contains Below ")
 
 if __name__ == "__main__":
 	unittest.main(verbosity=2)
